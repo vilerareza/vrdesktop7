@@ -1,0 +1,171 @@
+<SettingContentDevice>:
+    titleLabel: title_label
+    deviceNameLabel: device_name_label
+    deviceNameText: device_name_text
+    wifiNameLabel: wifi_name_label
+    wifiNameText: wifi_name_text
+    wifiPassLabel: wifi_name_label
+    wifiPassText: wifi_pass_text
+    visionAILabel: visionai_label
+    visionAISwitch: visionai_switch
+    btnSaveEdit: btn_save_edit
+    btnRemove: btn_remove
+    qrImage: qr_image
+
+    Label:
+        id: title_label
+        x_offset : 0.2
+        text : 'Device Info'
+        font_size : 24
+        font_family : 'arial' 
+        halign : 'center' 
+        valign : 'middle' 
+        #pos_hint : {'x':self.x_offset} #, 'top': 0.95}
+        center_x : device_name_text.center_x
+        top : root.top - dp(20)
+        size_hint : (None, None)
+        size : (dp(180), dp(30))
+        text_size : self.size
+
+    ImageButton:
+        id: btn_remove
+        source: 'images/settingview/btn_remove.png'
+        size_hint: (None, None)
+        size: (dp(40), dp(40))
+        right : device_name_text.right
+        top: title_label.y - dp(20)
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self)
+
+    ImageToggle:
+        id: btn_save_edit
+        source: 'images/settingview/btn_edit.png'
+        size_hint: (None, None)
+        size: (dp(40), dp(40))
+        right : btn_remove.x - dp(10)
+        top: btn_remove.top
+        on_state : root.toggle_press_callback(self)
+        source : 'images/settingview/btn_save.png' if root.editMode == True else 'images/settingview/btn_edit.png'
+
+    Label:
+        id: device_name_label
+        x_offset : 0.2
+        text : 'Device Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: btn_save_edit.y - dp(5)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: device_name_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: device_name_label.y - dp(3)
+        background_normal : "images/settingview/text_normal.png"
+        background_disabled_normal : "images/settingview/text_normal.png"
+        background_active : "images/settingview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    Label:
+        id: wifi_name_label
+        x_offset : 0.2
+        text : 'Wifi Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: device_name_text.y - dp(15)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: wifi_name_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: wifi_name_label.y - dp(3)
+        background_normal : "images/settingview/text_normal.png"
+        background_disabled_normal : "images/settingview/text_normal.png"
+        background_active : "images/settingview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    Label:
+        id: wifi_pass_label
+        x_offset : 0.2
+        text : 'Wifi Password'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: wifi_name_text.y - dp(15)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: wifi_pass_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: wifi_pass_label.y - dp(3)
+        background_normal : "images/settingview/text_normal.png"
+        background_disabled_normal : "images/settingview/text_normal.png"
+        background_active : "images/settingview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    Label:
+        id: visionai_label
+        x_offset : 0.2
+        text : 'Vision AI'
+        text_size : self.size
+        font_size : 20
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: wifi_pass_text.y - dp(25)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+    
+    Switch:
+        id: visionai_switch
+        size_hint : (None, None)
+        size : (dp(90), dp(40))
+        right : wifi_name_text.right
+        center_y : visionai_label.center_y
+        disabled: True if root.editMode == False else False
+
+    Image:
+        id: qr_image
+        size_hint : (None, None)
+        size: (dp(180), dp(180))
+        source: "images/settingview/qr_empty.png"
+        center_x : device_name_text.center_x
+        top: visionai_switch.y - dp(35)

@@ -1,0 +1,62 @@
+<LogFaceItem>:
+    dataImage : data_image
+    backgroundImage : background_image
+
+    size_hint : None,None
+    size : dp(90), dp(130)
+    #height : dp(130)
+
+    Image:
+        id : background_image
+        source: "images/logview/faceitem_normal.png"
+        size_hint : (1, 1)
+        x : root.x
+        y : root.y
+
+    FloatLayout :
+        id : data_image_float
+        size_hint : (1, None) 
+        height : dp(90)
+        x : root.x
+        top : root.top
+
+        Image :
+            id : data_image
+            size_hint : None, None
+            size : (dp(80), dp(80))
+            center_x : data_image_float.center_x
+            center_y : data_image_float.center_y
+
+    FloatLayout :
+        id: data_string_float
+        size_hint : (1, None)
+        height : dp(40)
+        x : root.x
+        top : data_image_float.y
+
+        Label :
+            id : date_label
+            center_x : data_string_float.center_x
+            top : data_string_float.top
+            size_hint : (None, None)
+            text_size : self.size
+            size : dp(80), dp(20)
+            halign : 'center'
+            valign : 'middle'
+            font_size: 14
+            font_family: "arial"
+
+        Label :
+            id : time_label
+            center_x : data_string_float.center_x
+            top : date_label.y
+            size_hint : (None, None)
+            size : dp(80), dp(20)
+            halign : 'center'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 14
+            font_family: "arial"
+
+    
+            

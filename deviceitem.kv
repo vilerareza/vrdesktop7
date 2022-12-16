@@ -1,0 +1,24 @@
+<DeviceItem>:
+    image : image
+    label : label
+    size_hint : (None, None)
+    size : (dp(95),dp(85)) 
+    
+    Image:
+        id : image
+        source : root.imagePath
+        mipmap : True
+        size_hint : (1,1)
+        pos_hint : {'center_x':0.5, 'center_y':0.5}
+    
+    Label:
+        id: label
+        text:"[color=dddddd]"+root.deviceName+"[/color]"
+        font_size : 16
+        font_family : "arial"
+        halign : "center"
+        valign : "top"
+        size_hint : (None, None)
+        size : (dp(80),dp(25))
+        pos_hint : {'center_x':0.5, 'top': 1}
+        markup : True

@@ -1,0 +1,35 @@
+<SettingView>:
+    serverBox : server_box
+    deviceList : device_list
+    settingContentBox : setting_content_box
+    manager: app.manager
+    
+    BoxLayout:
+        id : left_box
+        orientation : 'vertical'
+        size_hint : (1.5,1)
+        
+        ServerBox:
+            id : server_box
+            deviceListLayout : device_list.deviceListLayout
+            settingContentBox : setting_content_box
+            size_hint : (1, 0.5)
+        
+        DeviceListBox:
+            id : device_list
+            settingView: root
+            serverBox : server_box
+            settingContentBox : setting_content_box
+
+    SettingContentBox:
+        id : setting_content_box
+        settingView: root
+        serverBox : server_box
+        deviceList : device_list
+        canvas.before:
+            Color:
+                rgb : (0.45,0.45,0.45)
+            Rectangle:
+                size : self.size
+                pos : self.pos
+

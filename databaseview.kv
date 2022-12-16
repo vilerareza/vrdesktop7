@@ -1,0 +1,18 @@
+#: import databaselistbox databaselistbox
+
+<DatabaseView>:
+    manager : app.manager
+    databaseListBox : database_list_box
+    databaseContentBox : face_content_box
+        
+    DatabaseListBox:
+        id : database_list_box
+        databaseView : root
+        databaseContentBox : face_content_box
+        orientation : 'vertical'
+        size_hint : (1.5, 1)
+
+    DatabaseContentBox:
+        id : face_content_box
+        databaseView: root
+        databaseListBox : database_list_box

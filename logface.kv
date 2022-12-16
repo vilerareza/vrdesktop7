@@ -1,0 +1,52 @@
+<LogFaceObjectBox>:
+    orientation: 'vertical'
+    stackLayout : logfaceobject_stack 
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
+    BoxLayout:
+        # Container for title label and control buttons
+        id : header_box
+        orientation : 'horizontal'
+        size_hint : (1, None)
+        height : dp(50)
+
+        FloatLayout:
+            id : label_float
+            size_hint : (1, None)
+            height : dp (40)
+            canvas.before:
+                Color:
+                    rgb: 0.2, 0.2, 0.2
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            Label:
+                text: 'Detection'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                x: label_float.x + dp(20)
+                top: label_float.top - dp(10)
+    
+        FloatLayout:    # Reserved for buttons
+            id : button_float
+            size_hint : (1, None)
+            height : dp (40)
+                        
+    LogFaceObjectStack:
+        # The layout for displaying the log content
+        contentLayout : root.contentBox
+        id : logfaceobject_stack
+        cols: 2
+        padding: [20]
+        spacing: 10

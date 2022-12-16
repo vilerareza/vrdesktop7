@@ -1,0 +1,86 @@
+<SettingContentServer>:
+    titleLabel: title_label
+    serverAddressLabel: server_address_label
+    serverAddressText: server_address_text
+    btnSaveEdit: btn_save_edit
+    #btnTest: btn_test
+    testLabel : test_label
+    testImage : test_image
+
+    Label:
+        id: title_label
+        x_offset : 0.2
+        text : root.titleLabelText
+        font_size : 24
+        font_family : 'arial' 
+        halign : 'center' 
+        valign : 'middle' 
+        center_x : server_address_text.center_x
+        top : root.top - dp(20)
+        size_hint : (None, None)
+        size : (dp(180), dp(30))
+        text_size : self.size
+
+    Label:
+        id: server_address_label
+        x_offset : 0.2
+        text : 'Server Address'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: title_label.y - dp(70)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: server_address_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        multiline : False
+        font_size: 18
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: server_address_label.y - dp(3)
+        background_normal : "images/settingview/text_normal.png"
+        background_active : "images/settingview/text_normal.png"
+        background_disabled_normal : "images/settingview/text_normal.png"
+        disabled : True if root.editMode == False else False
+
+    Label:
+        id : test_label
+        text : ''
+        text_size : self.size
+        font_size : 14
+        font_family : 'arial'
+        halign : 'center' 
+        valign : 'middle'
+        size_hint: (None, None)
+        size: (dp(135), dp(20))
+        center_x : server_address_text.center_x
+        y : btn_save_edit.top + dp(10)
+
+    Image:
+        id: test_image
+        source: 'images/settingview/server_ok.png'
+        size_hint: (None, None)
+        size: (dp(20), dp(20))
+        x : test_label.right
+        center_y : test_label.center_y
+        opacity : 0
+
+    ImageToggle:
+        id : btn_save_edit
+        source: 'images/settingview/btn_edit_server.png'
+        size_hint: (None, None)
+        size: (dp(300), dp(35))
+        #x : btn_test.x
+        #top : btn_test.y - dp(20)
+        x : server_address_text.x
+        top: server_address_text.y - dp(50)
+        on_state: root.toggle_press_callback(self)
+        source : 'images/settingview/btn_save_server.png' if root.editMode == True else 'images/settingview/btn_edit_server.png'

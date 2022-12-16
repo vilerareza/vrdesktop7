@@ -1,0 +1,17 @@
+<ServerItem>:
+    serverImage : server_image
+    statusImage : status_image
+
+    Image:
+        id : server_image
+        pos_hint : {'center_x':0.5, 'center_y': 0.5}
+        size_hint : (1,1)
+        source : 'images/settingview/servericon_normal.png'
+    Image:
+        id : status_image
+        top: root.top - dp(25)
+        right : root.right - dp(45)
+        #pos_hint : {'center_x':0.5, 'center_y': 0.5}
+        size_hint : (None, None)
+        size : (dp(30), dp(30))
+        source : 'images/settingview/statusicon_inactive.png'

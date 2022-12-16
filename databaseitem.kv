@@ -1,0 +1,151 @@
+<DatabaseItem>:
+    dataImage : data_image
+    backgroundImage : background_image
+
+    size_hint : None,None
+    size : 180, 90
+    #on_press: app.manager.select_data(self)
+    #opacity: 0.3 if root.selected == True else 1
+
+    Image:
+        id : background_image
+        source: "images/databaseview/databaseitem_normal.png"
+        size_hint : (1, 1)
+        x : root.x
+        y : root.y
+
+    FloatLayout :
+        id : data_image_float
+        size_hint : (None, 1) 
+        width : dp(90)
+        x : root.x
+        y : root.y
+
+        Image :
+            id : data_image
+            size_hint : None, None
+            size : (dp(80), dp(80))
+            center_x : data_image_float.center_x
+            center_y : data_image_float.center_y
+
+    FloatLayout :
+        id: data_string_float
+        size_hint : (None, 1)
+        width : dp(90)
+        x : data_image_float.right
+        y : root.y
+
+        Label :
+            id : data_firstname_label
+            x : data_string_float.x + dp(5)
+            top : data_string_float.top
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 16
+            font_family: "arial"
+
+        Label :
+            id : data_lastname_label
+            x : data_string_float.x + dp(5)
+            top : data_firstname_label.y
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 16
+            font_family: "arial"
+
+        Label :
+            id : data_id_label
+            x : data_string_float.x + dp(5)
+            y : data_string_float.y + dp(5)
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 14
+            font_family: "arial"
+
+<FaceObjectWidget>:
+    dataImage : data_image
+    backgroundImage : background_image
+
+    size_hint : None,None
+    size : 180, 90
+    #on_press: app.manager.select_data(self)
+    #opacity: 0.3 if root.selected == True else 1
+
+    Image:
+        id : background_image
+        source: "images/databaseview/databaseitem_normal.png"
+        size_hint : (1, 1)
+        x : root.x
+        y : root.y
+
+    FloatLayout :
+        id : data_image_float
+        size_hint : (None, 1) 
+        width : dp(90)
+        x : root.x
+        y : root.y
+
+        Image :
+            id : data_image
+            size_hint : None, None
+            size : (dp(80), dp(80))
+            center_x : data_image_float.center_x
+            center_y : data_image_float.center_y
+
+    FloatLayout :
+        id: data_string_float
+        size_hint : (None, 1)
+        width : dp(90)
+        x : data_image_float.right
+        y : root.y
+
+        Label :
+            id : data_firstname_label
+            text : root.dataFirstName
+            x : data_string_float.x + dp(5)
+            top : data_string_float.top
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 16
+            font_family: "arial"
+
+        Label :
+            id : data_lastname_label
+            text : root.dataLastName
+            x : data_string_float.x + dp(5)
+            top : data_firstname_label.y
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 16
+            font_family: "arial"
+
+        Label :
+            id : data_id_label
+            text : root.dataID
+            x : data_string_float.x + dp(5)
+            y : data_string_float.y + dp(5)
+            size_hint : (None, None)
+            size : (dp(80), dp(25))
+            halign : 'left'
+            valign : 'middle'
+            text_size : self.size
+            font_size: 14
+            font_family: "arial"
+
+    
+            

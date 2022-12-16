@@ -1,0 +1,41 @@
+<MainTabs>:
+    do_default_tab : False
+    
+    tabSettingView : tab_setting_view
+    tabMultiView : tab_multi_view
+    tabDatabaseView : tab_database_view
+    tabLogView : tab_log_view
+    
+    settingView: setting_view
+    multiView : multi_view
+    databaseView: database_view
+    logView: log_view
+
+    TabbedPanelItem:
+        id : tab_setting_view
+        on_state : root.tab_state_callback(self)
+        
+        SettingView:
+            id: setting_view
+            
+    TabbedPanelItem:
+        id : tab_multi_view
+        on_state : root.tab_state_callback(self)
+
+        MultiView:
+            id: multi_view
+            
+    TabbedPanelItem:
+        id : tab_database_view
+        on_state : root.tab_state_callback(self)
+        
+        DatabaseView:
+            id : database_view
+            
+    TabbedPanelItem:
+        id : tab_log_view
+        on_state : root.tab_state_callback(self)
+
+        LogView:
+            id: log_view
+            

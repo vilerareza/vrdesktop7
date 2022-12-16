@@ -1,0 +1,17 @@
+<ProgressBox> :
+    
+    progressBar: progress_bar
+    progressLabel : progress_label
+    orientation : 'vertical'
+    size_hint : (1,1)
+
+    ProgressBar:
+        id : progress_bar
+
+    Label:
+        id : progress_label
+        size_hint : (1, None)
+        height : 20 
+        text_size : self.size
+        halign : 'left'
+        font_size : 14

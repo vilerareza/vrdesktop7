@@ -1,0 +1,196 @@
+<DatabaseContentFace>
+    faceIDText: face_id_text
+    faceFirstNameText: face_firstname_text
+    faceLastNameText: face_lastname_text
+    faceImageLayout: face_image_layout
+
+    btnSaveEdit: btn_save_edit
+    btnRemove: btn_remove
+
+    Label:
+        id: title_label
+        x_offset : 0.2
+        text : 'Face Info'
+        font_size : 24
+        font_family : 'arial' 
+        halign : 'center' 
+        valign : 'middle' 
+        #pos_hint : {'x':self.x_offset} #, 'top': 0.95}
+        center_x : face_id_text.center_x
+        top : root.top - dp(20)
+        size_hint : (None, None)
+        size : (dp(180), dp(30))
+        text_size : self.size
+
+    ImageButton:
+        id: btn_remove
+        source: 'images/databaseview/btn_remove.png'
+        size_hint: (None, None)
+        size: (dp(40), dp(40))
+        right : face_id_text.right
+        top: title_label.y - dp(40)
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self)
+
+    ImageToggle:
+        id: btn_save_edit
+        source: 'images/databaseview/btn_edit.png'
+        size_hint: (None, None)
+        size: (dp(40), dp(40))
+        right : btn_remove.x - dp(10)
+        top: btn_remove.top
+        on_state: root.toggle_press_callback(self)
+
+    Label:
+        id: face_id_label
+        x_offset : 0.2
+        text : 'Face ID'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: btn_save_edit.y - dp(5)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_id_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_id_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    Label:
+        id: face_firstname_label
+        x_offset : 0.2
+        text : 'First Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: face_id_text.y - dp(15)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_firstname_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_firstname_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    Label:
+        id: face_lastname_label
+        x_offset : 0.2
+        text : 'Last Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: face_firstname_text.y - dp(15)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_lastname_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        #background_color: (0.8, 0.8, 0.8)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_lastname_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+        disabled: True if root.editMode == False else False
+
+    BoxLayout:
+        id : image_view_box
+        x_offset : 0.2
+        orientation: "vertical"
+        size_hint : (None, None)
+        size: (dp(300), dp(150))
+        pos_hint : {'x':self.x_offset}
+        top: face_lastname_text.y - dp (40)
+        canvas.before:
+            Color:
+                rgb: 0.3, 0.3, 0.3
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            id: review_data_label
+            text: "Face Image"
+            size_hint : (1, None)
+            height: dp(20)
+            color: (0.75, 0.75, 0.75)
+            font_size: 18
+            font_family: "arial"
+            canvas.before:
+                Color:
+                    rgb: 0.25, 0.25, 0.25
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        FloatLayout:
+            size_hint: (1,1)
+
+            ScrollView:
+                id : image_scroll
+                do_scroll_y : False 
+                do_scroll_x : True
+                size_hint : (None, 1)
+                width : image_view_box.width if (face_image_layout.width > image_view_box.width) else (face_image_layout.width) 
+                bar_width : 3
+                bar_pos_x : 'bottom'
+                bar_color : (0.02, 0.4, 0.82, 0.7)
+                bar_inactive_color : (0.23, 0.73, 0.98, 0.4)
+                bar_margin : 0
+                pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+
+                GridLayout:
+                    id: face_image_layout
+                    rows: 1
+                    size_hint : (None, 1)
+                    pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+                    width : self.minimum_width
+                    spacing : 3
+                    padding : [3]
+                    #canvas.before:
+                    #    Color:
+                    #        rgb: 0.9, 0.35, 0.35
+                    #    Rectangle:
+                    #        pos: self.pos
+                    #        size: self.size

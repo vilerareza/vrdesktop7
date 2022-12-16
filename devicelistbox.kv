@@ -1,0 +1,71 @@
+<DeviceListBox>:
+    deviceListLayout : device_list_layout
+    btnDeviceAdd: device_add_button
+    btnRefresh: btn_refresh
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgb : (0.3,0.3,0.3)
+        Rectangle:
+            size : self.size
+            pos : self.pos
+
+    BoxLayout:
+        # Container for control buttons
+        orientation : 'horizontal'
+        size_hint : (1, None)
+        height : dp(50)
+
+        FloatLayout:
+            id : label_float
+            size_hint : (1, 1)
+
+            Label:
+                text: 'Camera'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                x: label_float.x + dp(30)
+                top: label_float.top - dp(20)
+
+        FloatLayout:
+            id : button_float
+            size_hint : (1, 1)
+            # height : dp (40)
+
+            ImageButton:
+                id : device_add_button
+                source: 'images/settingview/btn_add_icon.png'
+                size_hint: (None, None)
+                size: (75, 40)
+                y : button_float.y
+                right : button_float.right - dp(20)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+            
+            ImageButton:
+                id : btn_refresh
+                source: 'images/settingview/btn_refresh.png'
+                size_hint: (None, None)
+                size: (40, 40)
+                y : button_float.y
+                right : device_add_button.x - dp(10)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+    DeviceList:
+        id : device_list_layout
+        serverBox : root.serverBox
+        settingContentBox : root.settingContentBox
+        spacing : 20
+        padding : [40, 20, 40, 40]
+        canvas.before:
+            Color:
+                rgb : (0.3,0.3,0.3)
+            Rectangle:
+                size : self.size
+                pos : self.pos

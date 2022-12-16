@@ -1,0 +1,55 @@
+#: import maintabs maintabs
+
+<Manager>:
+    orientation : 'horizontal'
+    headerBar : header_layout
+    mainTabs : main_tabs 
+
+    FloatLayout:    # Header Bar
+        id : header_layout
+        tabStrip : tab_strip
+        size_hint : (None, 1)
+        width : dp(40)
+        canvas.before :
+            Color : 
+                rgb : (0,0,0)
+            Rectangle :
+                size : self.size
+                pos : self.pos
+
+        TabbedPanelStrip:
+            id : tab_strip
+            cols : 1
+            rows : 4
+            spacing : 10
+            tabbed_panel : main_tabs
+            size_hint : (1, None)
+            height : dp (200)
+            pos_hint : {'top' : 0.95}
+
+    MainTabs:      # App Content Tabs
+        id : main_tabs
+        size_hint : (1,1)
+        tab_pos : 'left_top'
+
+<ConnectPopup>:
+    button : btn
+    title: 'Connecting to Server...'
+    size_hint: None, None
+    size : 330, 110
+    auto_dismiss : False
+    FloatLayout:
+        size_hint:(1,1)
+        Image:
+            source : 'images/settingview/popup_connecting.png'
+            size_hint : (None, None)
+            size : (dp(90), dp(50))
+            pos_hint : {'x': 0, 'center_y': 0.5}
+        Button:
+            id : btn
+            background_normal : 'images/settingview/btn_popup_cancel.png'
+            background_down : 'images/settingview/btn_popup_cancel_down.png'
+            size_hint : (None, None)
+            size : (dp(100), dp(30))
+            pos_hint : {'right': 1, 'center_y': 0.5}
+            text: 'Cancel'

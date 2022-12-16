@@ -1,0 +1,249 @@
+<DatabaseAddFace>:
+    faceIDText: face_id_text
+    faceFirstNameText: face_firstname_text
+    faceLastNameText: face_lastname_text
+    imgFileText: img_file_text
+    btnSelectImg: btn_select_img
+    btnReview: btn_review
+    btnCancel: btn_cancel
+    btnSave: btn_save
+    reviewImgGrid: review_img_grid
+    reviewDataLabel: review_data_label
+    imgNoFace: img_no_face
+
+    Label:
+        id: title_label
+        x_offset : 0.2
+        text : root.titleLabelText
+        font_size : 24
+        font_family : 'arial' 
+        halign : 'center' 
+        valign : 'middle' 
+        #pos_hint : {'x':self.x_offset} #, 'top': 0.95}
+        center_x : face_id_text.center_x
+        top : root.top - dp(20)
+        size_hint : (None, None)
+        size : (dp(180), dp(30))
+        text_size : self.size
+
+    Label:
+        id: face_id_label
+        x_offset : 0.2
+        text : 'Face ID'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: title_label.y - dp(20)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_id_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_id_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+
+    Label:
+        id: face_firstname_label
+        x_offset : 0.2
+        text : 'First Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: face_id_text.y - dp(12)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_firstname_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_firstname_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+
+    Label:
+        id: face_lastname_label
+        x_offset : 0.2
+        text : 'Last Name'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: face_firstname_text.y - dp(12)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: face_lastname_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: face_lastname_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+
+    Label:
+        id: img_file_label
+        x_offset : 0.2
+        text : 'Image File'
+        text_size : self.size
+        font_size : 16
+        font_family : 'arial'
+        halign : 'left' 
+        valign : 'bottom'
+        pos_hint : {'x':self.x_offset}
+        top: face_lastname_text.y - dp(12)
+        size_hint : (None, None)
+        size : dp(120), dp(20)
+
+    TextInput:
+        id: img_file_text
+        x_offset : 0.2
+        foreground_color: (0.1, 0.1, 0.1)
+        multiline : False
+        font_size: 20
+        font_family: "arial"
+        size_hint: None, None
+        size: dp(300), dp(35)
+        pos_hint : {'x':self.x_offset}
+        top: img_file_label.y - dp(3)
+        background_normal : "images/databaseview/text_normal.png"
+        background_disabled_normal : "images/databaseview/text_normal.png"
+        background_active : "images/databaseview/text_normal.png"
+
+    ImageButton:
+        # Image folder selection button
+        id: btn_select_img
+        size_hint : (None, None)
+        size: (dp(35), dp(35))
+        source: "images/databaseview/selectfile.png"
+        x: img_file_text.right + dp(3)
+        y: img_file_text.y
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self)
+
+    ImageButton:
+        id : btn_review
+        source: 'images/databaseview/btn_review.png'
+        size_hint: (None, None)
+        size: (dp(150), dp(35))
+        x : img_file_text.x
+        top: img_file_text.y - dp(20)
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self), root.preview_data(face_id_text, face_firstname_text, face_lastname_text, img_file_text)
+        opacity: 1.0 if self.disabled == False else 0.7
+        
+    ImageButton:
+        id : btn_cancel
+        source: 'images/databaseview/btn_cancel.png'
+        size_hint: (None, None)
+        size: (dp(135), dp(35))
+        x : btn_review.right + dp(15)
+        y : btn_review.y
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self)
+        opacity: 1.0 if self.disabled == False else 0.7
+
+    BoxLayout:
+        # Image view box
+        id: image_view_box
+        x_offset : 0.2
+        orientation: "vertical"
+        size_hint : (None, None)
+        size: (dp(300), dp(150))
+        pos_hint : {'x':self.x_offset}
+        top: btn_review.y - dp(20)
+        canvas.before:
+            Color:
+                rgb: 0.3, 0.3, 0.3
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            id: review_data_label
+            text: "..."
+            size_hint : (1, None)
+            height: dp(20)
+            font_size: 18
+            font_family: "arial"
+            canvas.before:
+                Color:
+                    rgb: 0.25, 0.25, 0.25
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        FloatLayout:    # Container for review image
+            size_hint: (1, 1)
+
+            Image:  # Initial no face image
+                id: img_no_face
+                source: "images/databaseview/no_face.png" 
+                size_hint : (0.8, 0.8)
+                pos_hint : {'center_x': 0.5, 'center_y': 0.5}
+
+            ScrollView:
+                id : selection_scroll
+                do_scroll_y : False 
+                do_scroll_x : True
+                size_hint : (None, 1)
+                width : image_view_box.width if (review_img_grid.width > image_view_box.width) else (review_img_grid.width) 
+                bar_width : 3
+                bar_pos_x : 'top'
+                bar_color : (0.02, 0.4, 0.82, 0.7)
+                bar_inactive_color : (0.23, 0.73, 0.98, 0.4)
+                bar_margin : 0
+                pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+
+                GridLayout:
+                    id: review_img_grid
+                    rows: 1
+                    size_hint : (None, 1)
+                    pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+                    width : self.minimum_width
+                    spacing : 3
+                    padding : [3]
+
+    ImageButton:
+        id : btn_save
+        source: 'images/databaseview/btn_save.png'
+        size_hint: (None, None)
+        size: (dp(150), dp(35))
+        center_x : image_view_box.center_x
+        top: image_view_box.y - dp(20)
+        on_press: root.button_press_callback(self)
+        on_release: root.button_release_callback(self)
+        disabled : not root.isDataComplete
+        opacity: 1.0 if self.disabled == False else 0.7

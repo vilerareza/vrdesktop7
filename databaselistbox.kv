@@ -1,0 +1,66 @@
+<DatabaseListBox>:
+    orientation: 'vertical'
+    btnAdd : btn_add
+    btnRefresh : btn_refresh
+    databaseListLayout : database_list_layout 
+
+    canvas.before:
+        Color:
+            rgb: 0.2, 0.2, 0.2
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
+    BoxLayout:
+        # Container for title label and control buttons
+        id : header_box
+        orientation : 'horizontal'
+        size_hint : (1, None)
+        height : dp(60)
+
+        FloatLayout:
+            id : label_float
+            size_hint : (1, 1)
+
+            Label:
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                text: 'Database'
+                x: label_float.x + dp(20)
+                y: label_float.y + dp(10)
+    
+        FloatLayout:
+            id : button_float
+            size_hint : (1, 1)
+
+            ImageButton:
+                id : btn_add
+                source: 'images/databaseview/btn_add_icon.png'
+                size_hint: (None, None)
+                size: (75, 40)
+                y : button_float.y
+                right : button_float.right - dp(20)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+            ImageButton:
+                id : btn_refresh
+                source: 'images/databaseview/btn_refresh.png'
+                size_hint: (None, None)
+                size: (40, 40)
+                y : button_float.y
+                right : btn_add.x - dp(10)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+                        
+    DatabaseListLayout:
+        # The layout for displaying the database content
+        id : database_list_layout
+        databaseContentBox : root.databaseContentBox
+        padding: [20]
+        spacing: 10

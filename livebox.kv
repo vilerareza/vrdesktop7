@@ -1,0 +1,71 @@
+#: import livestream livestream
+#: import liveactionbar liveactionbar
+
+<LiveBox>:
+    size_hint: None, None
+    liveStream : live_stream
+    liveActionBar : live_action_bar
+    moveLeft : move_left
+    moveRight : move_right
+    moveUp : move_up
+    moveDown : move_down
+
+    LiveStream:
+        id : live_stream
+        pos_hint : {'center_x':0.5, 'center_y': 0.5}
+        size_hint :(None, None) 
+        size : (1280, 720) 
+        allow_stretch : True
+
+    LiveActionBar:
+        id : live_action_bar
+        opacity : 0
+        size_hint : None, None
+        width : live_stream.width * 0.7
+        height : live_stream.height * 0.1
+        pos_hint: {'center_x' : 0.5}
+        y : live_stream.y
+    
+    Image:
+        id : move_left
+        opacity : 0
+        source : 'images/moveleft_normal.png'
+        size_hint : None, None
+        size : (dp(20), dp(40))
+        x : live_stream.x + dp(10)
+        center_y : live_stream.center_y + dp(20)
+        on_touch_down: root.button_touch_down(*args)
+        on_touch_up: root.button_touch_up(*args)
+
+    Image:
+        id : move_right
+        opacity : 0
+        source : 'images/moveright_normal.png'
+        size_hint : None, None
+        size : (dp(20), dp(40))
+        right : live_stream.right - dp(10)
+        center_y : live_stream.center_y + dp(20)
+        on_touch_down: root.button_touch_down(*args)
+        on_touch_up: root.button_touch_up(*args)
+
+    Image:
+        id : move_up
+        opacity : 0
+        source : 'images/moveup_normal.png'
+        size_hint : None, None
+        size : (dp(40), dp(20))
+        center_x : live_stream.center_x
+        top : live_stream.top - dp(10)
+        on_touch_down: root.button_touch_down(*args)
+        on_touch_up: root.button_touch_up(*args)
+
+    Image:
+        id : move_down
+        opacity : 0
+        source : 'images/movedown_normal.png'
+        size_hint : None, None
+        size : (dp(40), dp(20))
+        center_x : live_stream.center_x
+        y : live_action_bar.top + dp(10)
+        on_touch_down: root.button_touch_down(*args)
+        on_touch_up: root.button_touch_up(*args)

@@ -1,0 +1,25 @@
+<ServerBox>:
+    serverItem : server_item
+    titleLabel : title_label
+
+    ServerItem:
+        id : server_item
+        size_hint : (None, None)
+        size : (dp(150), dp(120))
+        center_x : root.center_x
+        center_y : root.center_y
+        #on_state : root.item_press_callback(self)
+        on_touch_down: root.item_touch_down(*args)
+
+    Label:
+        id: title_label
+        text: "Server"
+        size_hint : (None, None)
+        size: dp(150), dp(20)
+        text_size : self.size
+        halign : 'left'
+        valign : 'middle'
+        font_size: 17
+        font_family: "arial"
+        x: root.x + dp(30)
+        top: root.top - dp(20)

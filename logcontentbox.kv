@@ -1,0 +1,102 @@
+<LogContentBox>
+    manager : app.manager
+    logFaceLayout : log_face_layout
+    logFrameLayout : log_frame_layout
+
+    orientation : 'vertical'
+
+    BoxLayout:
+    # Upper container
+        id : upper_container
+        orientation : 'vertical'
+        size_hint : (1, 1.5)
+        canvas.before:
+            Color:
+                rgb: 0.3, 0.3, 0.3
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        FloatLayout:
+            id: upper_label_container
+            size_hint : (1, None)
+            height : dp (30)
+
+            Label:
+                text: 'Faces'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'center'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                center_x: upper_label_container.center_x
+                top: upper_label_container.top - dp(10)
+
+        BoxLayout:
+            id: scroll_box
+            size_hint: (1,1)
+
+            ScrollView:
+                id : image_scroll
+                do_scroll_y : True 
+                do_scroll_x : True
+                size_hint : (1, 1)
+                #height : scroll_box.height
+                #height : dp(200)
+                bar_width : dp(10)
+                scroll_type :['bars']
+                bar_pos_y : 'right'
+                bar_pos_x : 'bottom'
+                bar_color : (0.02, 0.4, 0.82, 0.8)
+                bar_inactive_color : (0.23, 0.73, 0.98, 0.7)
+                bar_margin : 0
+                
+                LogFaceGrid:
+                # The layout for displaying detected face images of selected id
+                    cols : 8
+                    myRoot : root
+                    frameLayout : root.logFrameLayout
+                    id: log_face_layout
+                    padding: [20]
+                    spacing: 8
+                    size_hint : (None, None)
+                    #height : dp(500)
+                    height : self.minimum_height
+                    width : self.minimum_width
+
+    BoxLayout:
+    # Lower container
+        id : lower_container
+        orientation : 'vertical'
+        size_hint : (1, 1)
+        canvas.before:
+            Color:
+                rgb: 0.35, 0.35, 0.35
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        FloatLayout:
+            id: lower_label_container
+            size_hint : (1, None)
+            height : dp (30)
+
+            Label:
+                text: 'Frame'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'center'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                center_x: lower_label_container.center_x
+                top: lower_label_container.top - dp(10)
+
+        FloatLayout:
+            id : log_frame_layout
+            size_hint : (1, 1)
+                
+
