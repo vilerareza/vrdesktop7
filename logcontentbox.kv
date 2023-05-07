@@ -1,8 +1,16 @@
 <LogContentBox>
+
     manager : app.manager
     logFaceLayout : log_face_layout
     logFrameLayout : log_frame_layout
-
+    chkLast10 : chk_last10
+    chkToday : chk_today
+    chkRange : chk_range
+    btnDateGte : btn_date_gte
+    btnTimeGte : btn_time_gte
+    btnDateLte : btn_date_lte
+    btnTimeLte : btn_time_lte
+    btnApply : btn_range_apply
     orientation : 'vertical'
 
     BoxLayout:
@@ -17,22 +25,190 @@
                 pos: self.pos
                 size: self.size
 
-        FloatLayout:
-            id: upper_label_container
+        BoxLayout:
+            id: upper_control_container
             size_hint : (1, None)
-            height : dp (30)
+            height : dp (40)
+            canvas.before:
+                Color:
+                    rgb: 0.25, 0.25, 0.25
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
-            Label:
-                text: 'Faces'
-                size_hint : (None, None)
-                size: dp(150), dp(20)
-                text_size : self.size
-                halign : 'center'
-                valign : 'middle'
-                font_size: 17
-                font_family: "arial"
-                center_x: upper_label_container.center_x
-                top: upper_label_container.top - dp(10)
+            FloatLayout:
+                id : upper_container_label_float
+                size_hint : (None, 1)
+                width : dp(100)
+                canvas.before:
+                    Color:
+                        rgb: 0.3, 0.3, 0.3
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                Label:    
+                    text: 'Faces'
+                    size_hint : (None, None)
+                    size_hint: (None, 1)
+                    width: dp(70)
+                    text_size : self.size
+                    halign : 'left'
+                    valign : 'middle'
+                    font_size: 17
+                    font_family: "arial"
+                    x: upper_container_label_float.x + dp(10)
+                    center_y: upper_container_label_float.center_y
+            
+            FloatLayout:
+                id : upper_container_btn_float
+                size_hint : (1, 1)
+
+                CheckBox:
+                    id: chk_last10
+                    group: 'log_range'
+                    active: True
+                    size_hint : (None, 1)
+                    width: dp(40)
+                    x: upper_container_btn_float.x+dp(10)
+                    center_y: upper_container_btn_float.center_y
+                    on_active: root.checkbox_callback(self)
+
+                Label:
+                    id: lbl_last10
+                    text: 'Last 10'
+                    size_hint : (None, 1)
+                    width: dp(50)
+                    text_size : self.size
+                    halign : 'left'
+                    valign : 'middle'
+                    font_size: 14
+                    font_family: "arial"
+                    x: upper_container_btn_float.x+dp(10)
+                    x: chk_last10.right-dp(5)
+                    center_y: upper_container_btn_float.center_y
+
+                CheckBox:
+                    id: chk_today
+                    group: 'log_range'
+                    size_hint : (None, 1)
+                    width: dp(40)
+                    x: lbl_last10.right+10
+                    center_y: upper_container_btn_float.center_y
+                    on_active: root.checkbox_callback(self)
+
+                Label:
+                    id: lbl_date_today
+                    text: 'Today'
+                    size_hint : (None, 1)
+                    width: dp(40)
+                    text_size : self.size
+                    halign : 'left'
+                    valign : 'middle'
+                    font_size: 14
+                    font_family: "arial"
+                    x: chk_today.right-dp(5)
+                    center_y: upper_container_btn_float.center_y
+
+                CheckBox:
+                    id: chk_range
+                    group: 'log_range'
+                    size_hint : (None, 1)
+                    width: dp(40)
+                    x: lbl_date_today.right+10
+                    center_y: upper_container_btn_float.center_y
+
+                Label:
+                    id: lbl_date_gte
+                    text: 'Range'
+                    size_hint : (None, 1)
+                    width: dp(40)
+                    text_size : self.size
+                    halign : 'left'
+                    valign : 'middle'
+                    font_size: 14
+                    font_family: "arial"
+                    x: chk_range.right-dp(5)
+                    center_y: upper_container_btn_float.center_y
+
+                Button:
+                    id : btn_date_gte
+                    text: root.strDate
+                    background_normal: 'images/logview/btn_date.png'
+                    background_down: 'images/logview/btn_date_down.png'
+                    background_disabled_normal: 'images/logview/btn_date.png'
+                    size_hint: (None, None)
+                    size: (75, 30)
+                    center_y : upper_container_btn_float.center_y
+                    x:lbl_date_gte.right+dp(5)
+                    on_release : root.button_release_callback(self)
+                    disabled: True if not chk_range.active else False
+                
+                Button:
+                    id : btn_time_gte
+                    text: root.strTime
+                    background_normal: 'images/logview/btn_time.png'
+                    background_down: 'images/logview/btn_time_down.png'
+                    background_disabled_normal: 'images/logview/btn_time.png'
+                    size_hint: (None, None)
+                    size: (55, 30)
+                    center_y : upper_container_btn_float.center_y
+                    x:btn_date_gte.right+dp(2)
+                    on_release : root.button_release_callback(self)
+                    disabled: True if not chk_range.active else False
+    
+                Label:
+                    id: lbl_date_lte
+                    text: '-'
+                    size_hint : (None, 1)
+                    width: dp(10)
+                    text_size : self.size
+                    halign : 'center'
+                    valign : 'middle'
+                    font_size: 14
+                    font_family: "arial"
+                    x: btn_time_gte.right+dp(5)
+                    center_y: upper_container_btn_float.center_y
+
+                Button:
+                    id : btn_date_lte
+                    text: root.strDate
+                    background_normal: 'images/logview/btn_date.png'
+                    background_down: 'images/logview/btn_date_down.png'
+                    background_disabled_normal: 'images/logview/btn_date.png'
+                    size_hint: (None, None)
+                    size: (75, 30)
+                    center_y : upper_container_btn_float.center_y
+                    x:lbl_date_lte.right+dp(5)
+                    on_release : root.button_release_callback(self)
+                    disabled: True if not chk_range.active else False
+                
+                Button:
+                    id : btn_time_lte
+                    text: root.strTime
+                    background_normal: 'images/logview/btn_time.png'
+                    background_down: 'images/logview/btn_time_down.png'
+                    background_disabled_normal: 'images/logview/btn_time.png'
+                    size_hint: (None, None)
+                    size: (55, 30)
+                    center_y : upper_container_btn_float.center_y
+                    x:btn_date_lte.right+dp(2)
+                    on_release : root.button_release_callback(self)
+                    # opacity : 1.0 if not self.disabled else 0.7
+                    disabled: True if not chk_range.active else False
+                
+                Button:
+                    id : btn_range_apply
+                    text: 'Apply'
+                    background_normal: 'images/logview/btn_apply.png'
+                    background_down: 'images/logview/btn_apply_down.png'
+                    background_disabled_normal: 'images/logview/btn_apply_inactive.png'
+                    size_hint: (None, None)
+                    size: (55, 30)
+                    center_y : upper_container_btn_float.center_y
+                    x:btn_time_lte.right+dp(10)
+                    on_release : root.button_release_callback(self)
+                    disabled: True if not chk_range.active else False
 
         BoxLayout:
             id: scroll_box

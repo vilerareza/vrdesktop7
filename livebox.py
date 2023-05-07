@@ -1,4 +1,5 @@
 import io
+import os
 import time
 from functools import partial
 from threading import Thread, Condition
@@ -16,6 +17,7 @@ from audioconnection import AudioReceiver, AudioTransmitter
 from mylayoutwidgets import ColorFloatLayout
 
 from livestream import LiveStream
+from rectransferbox import RecTransferBox
 
 import websocket
 import json
@@ -30,6 +32,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     moveUp = ObjectProperty(None)
     moveDown = ObjectProperty(None)
     status = StringProperty("stop")
+    recTransferBox = ObjectProperty(None)
     moveEvent = None
     # Websockets
     wst = None
@@ -48,6 +51,10 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     audioTransmitter = None
     # Stop flag
     stop_flag = False
+    # Device IP
+    deviceIP = ''
+    # Recording files from camera
+    rec_files = {'year':[],'month':[],'date':[],'hour':[],'min':[]}
 
     def __init__(self, device_name = '', **kwargs):
         super().__init__(**kwargs)
@@ -63,6 +70,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     def start_live_stream (self, deviceIP):
         # Start the live stream (Image object)
 
+        self.deviceIP = deviceIP
+
         ## Connect to websocket
         def on_message(wsapp, message):
             ### When frame data is received form server
@@ -72,7 +81,21 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             Clock.schedule_once(partial(update_frame, coreImg), 0)
         
         def on_message_control(wsapp, message):
-            pass
+            message_json = json.loads(message)
+            if message_json['resp_type'] == 'rec_files':
+                files = message_json['files']
+                for file in files:
+                    try:
+                        file_name = os.path.splitext(os.path.split(file)[-1])[0]
+                        year, month, date, hour, min_, sec = file_name.split('_')
+                        self.rec_files['year'].append(year)
+                        self.rec_files['month'].append(month)
+                        self.rec_files['date'].append(date)
+                        self.rec_files['hour'].append(hour)
+                        self.rec_files['min'].append(min_)
+                    except Exception as e:
+                        print (e)
+                print (self.rec_files)
         
         def update_frame(coreImg, *largs):
             ## Update the livestream texture with new frame
@@ -348,14 +371,95 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             self.audioTransmitter.stop_stream()
             self.audioTransmitter = None
 
-    def light(self, on = False ):
+
+    def light(self, on = False):
+
         def light_on():
             data = {'op': 'lt', 'on' : on}
             try:
-                self.wsapp.send(json.dumps(data))
+                self.wsapp_control.send(json.dumps(data))
                 return True
             except Exception as e:
-                print (f'{e}: Error sending light command to server')
+                print (f'{e}: Error sending light command to camera')
                 return False
+        
         # Start the light thread
         Thread(target = light_on).start()
+    
+
+    def start_stop_cam(self, start=False):
+        
+        def __start_stop_cam():
+            data = {'op': 'st', 'start': start}
+            try:
+                self.wsapp_control.send(json.dumps(data))
+                return True
+            except Exception as e:
+                print (f'{e}: Error start / stop command to camera')
+                return False
+        
+        ## Connect to websocket
+        def on_message(wsapp, message):
+            print('Rec file received')
+            with open ('rec_file_test.mp4', 'wb') as file:
+                file.write(message)
+
+        # Thread(target = start_stop_cam_).start()
+        __start_stop_cam()
+        # Re-init the texture of the liveStream object
+        # self.liveStream.texture = Texture.create()
+        # print ('texture changed')
+        # Clock.schedule_once(partial(callback, isSuccess, r), 0)
+        #self.liveStream.source = 'images/stopstream.png'
+        #self.liveStream.reload
+        self.wsapp.close()
+        #Clock.schedule_once(test_func, 0)
+        #self.liveStream.canvas.ask_update()
+
+        # self.recTransferBox = RecTransferBox()
+        self.add_widget(RecTransferBox(size_hint = (0.4, 0.4), pos_hint = {'center_x':0.5, 'center_y': 0.5}))
+
+        try:
+            # Create the websocket connection to camera
+            self.wsapp_download = websocket.WebSocketApp(f"ws://{self.deviceIP}:8000/download/", on_message=on_message)
+
+            def run_download():
+                # Start the websocket connection
+                time.sleep(0.3) # Without this delay the websocket callback will not run
+                self.wsapp_download.run_forever()
+
+            self.wst_download = Thread(target = run_download)
+            self.wst_download.daemon = True
+            self.wst_download.start()
+
+        except Exception as e:
+            print (f'{e}: Failed starting download websocket connection')
+            self.wst_download = None
+            
+
+    def get_rec_info(self):
+
+        # Get rec file info from camera based on date and time
+        data = {'op': 'rec_info'}
+
+        try:
+            self.wsapp_control.send(json.dumps(data))
+            return True
+        except Exception as e:
+            print (f'{e}: Error getting rec file info from camera')
+            return False
+
+
+    def download_rec(self):
+
+        # Sending download command via control websocket
+        data = {'op': 'download'}
+
+        try:
+            self.wsapp_control.send(json.dumps(data))
+            return True
+        except Exception as e:
+            print (f'{e}: Error downloading rec file from camera')
+            return False
+
+

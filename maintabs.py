@@ -1,6 +1,4 @@
-from tkinter import ON
 from kivy.lang import Builder
-from kivy.core.window import Window
 from kivy.properties import ObjectProperty
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
 from kivy.clock import Clock
@@ -30,6 +28,7 @@ class MainTabs(TabbedPanel):
         super().__init__(**kwargs)
         pass
     
+    # Note: Not used anywhere
     def tabLogViewPressed(self, tab):
         if tab.state == "down":
             # Stop the multiview

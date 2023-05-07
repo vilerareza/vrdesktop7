@@ -3,6 +3,7 @@ from threading import Thread
 import pickle
 import base64
 import socket
+from datetime import datetime
 import time
 from dateutil.parser import isoparse
 from functools import partial
@@ -18,14 +19,13 @@ from kivy.uix.behaviors import FocusBehavior
 from kivy.core.image import Image as CoreImage
 from kivy.uix.gridlayout import GridLayout
 from kivy.clock import Clock
+from kivymd.uix.picker import MDDatePicker, MDTimePicker
 
 from logfaceitem import LogFaceItem
 
 import requests
 import numpy as np
 from cv2 import imencode, imdecode, rectangle
-
-import datetime
 
 Builder.load_file('logcontentbox.kv')
 
@@ -35,8 +35,27 @@ class LogContentBox(BoxLayout):
     detectionLog = None
     logFaceLayout = ObjectProperty(None)
     logFrameLayout = ObjectProperty(None)
+    btnDateGte = ObjectProperty(None)
+    btnTimeGte = ObjectProperty(None)
+    btnDateLte = ObjectProperty(None)
+    btnTimeLte = ObjectProperty(None)
+    btnApply = ObjectProperty(None)
+    
     isServerTimeout = False
     stopFlag = False
+
+    currentID = -1
+    nLast = 10
+    chkLast10 = ObjectProperty(None)
+    chkToday = ObjectProperty(None)
+    chkRange = ObjectProperty(None)
+    dateGte = datetime.now()
+    timeGte = dateGte.time()
+    dateLte = datetime.now()
+    timeLte = dateLte.time()
+    strDate = dateGte.strftime('%d-%m-%y')
+    strTime = timeGte.strftime('%H:%M')
+
 
     def __init__(self, server_address_file='data/serveraddress.p', **kwargs):
         super().__init__(**kwargs)
@@ -44,6 +63,8 @@ class LogContentBox(BoxLayout):
         self.serverAddressFile = server_address_file
 
     def display_detection_log(self, face_id):
+        # Setting currently selected face ID
+        self.currentID = face_id
         # Clearing layout
         self.clear_images()
         # Getting server address
@@ -51,8 +72,26 @@ class LogContentBox(BoxLayout):
         # Show popup message
         self.manager.open_popup(self)
         self.manager.popup.title = 'Getting Log from Server...'
+        
         # Get detection log form the server
-        self.get_detection_log(face_id, serverIP, serverName)
+        if self.chkLast10.active:
+            nLast=self.nLast
+            str_date_time_gte=0
+            str_date_time_lte=0
+        elif self.chkToday.active:
+            nLast=0
+            str_date_time_gte=(datetime.now()).strftime('%d%m%y%H%M')
+            str_date_time_lte=0
+        elif self.chkRange.active:
+            nLast=0
+            str_date_time_gte=self.dateGte.strftime('%d%m%y')+self.timeGte.strftime('%H%M')
+            str_date_time_lte=self.dateLte.strftime('%d%m%y')+self.timeLte.strftime('%H%M')
+        else:
+            nLast=0
+            str_date_time_gte=0
+            str_date_time_lte=0
+        
+        self.get_detection_log(face_id, serverIP, serverName, nLast, date_gte=str_date_time_gte, date_lte=str_date_time_lte)
 
     def clear_images(self):
         '''Clearing images in layouts'''
@@ -60,7 +99,7 @@ class LogContentBox(BoxLayout):
         for layout in layouts:
             layout.clear_widgets()
 
-    def get_detection_log(self, face_id, server_ip, server_name):
+    def get_detection_log(self, face_id, server_ip, server_name, nLast = 0, date_gte=0, date_lte=0):
         '''Get detection log for respective face_id'''
 
         def _send_request():
@@ -69,7 +108,7 @@ class LogContentBox(BoxLayout):
             # Resetting the stop flag
             self.stopFlag = False
             '''Send request to the server to get log for given face IDs'''
-            isSuccess, r = self.send_request_get(server_ip, server_name, 8000, f'api/log/faceid/{face_id}/', 5)
+            isSuccess, r = self.send_request_get(server_ip, server_name, 8000, f'api/log/faceid_range/{face_id}/{nLast}/{date_gte}/{date_lte}/', 5)
             # Sending request complete. Run callback function
             Clock.schedule_once(partial(callback, isSuccess, r), 0)
 
@@ -77,6 +116,7 @@ class LogContentBox(BoxLayout):
             # Getting and parsing response
             if isSuccess:
                 log_response = r.json()  # Produce list of dict
+                #print (log_response[0]['timeStamp'])
                 self.show_detection_face(self.logFaceLayout, log_response)
                 # Dismissing popup message
                 self.manager.popup.dismiss()
@@ -188,6 +228,57 @@ class LogContentBox(BoxLayout):
             popup.dismiss()
             # Resetting isServerTimeout
             self.isServerTimeout = False
+
+    def show_date_time_picker(self, sender):
+
+        def get_date_time(instance, value, *args):
+            if sender == self.btnDateGte:
+                self.dateGte=value
+                # Updating the button text to selected date
+                sender.text=value.strftime('%d-%m-%y') 
+            elif sender == self.btnDateLte:
+                self.dateLte=value
+                # Updating the button text to selected date
+                sender.text=value.strftime('%d-%m-%y') 
+            elif sender == self.btnTimeGte:
+                self.timeGte=value
+                # Updating the button text to selected date
+                sender.text=value.strftime('%H:%M') 
+            elif sender == self.btnTimeLte:
+                self.timeLte=value
+                # Updating the button text to selected date
+                sender.text=value.strftime('%H:%M') 
+            
+            # Get detection log form the server
+            str_date_time_gte = self.dateGte.strftime('%d%m%y')+self.timeGte.strftime('%H%M')
+            str_date_time_lte = self.dateLte.strftime('%d%m%y')+self.timeLte.strftime('%H%M')
+            print(str_date_time_gte)
+            print(str_date_time_lte)
+
+        if (sender == self.btnDateGte or sender == self.btnDateLte):
+            date_dialog = MDDatePicker()
+            date_dialog.bind(on_save = get_date_time)
+            date_dialog.open()
+
+        elif (sender == self.btnTimeGte or sender == self.btnTimeLte):
+            date_dialog = MDTimePicker()
+            date_dialog.set_time((datetime.now()).time())
+            date_dialog.bind(on_save = get_date_time)
+            date_dialog.open()
+
+
+    def button_release_callback(self, button):
+
+        if button != self.btnApply:
+            self.show_date_time_picker(sender=button)
+        else:
+            if self.currentID != -1:
+                self.display_detection_log(self.currentID)
+
+    def checkbox_callback(self, chkbox):
+        if ((chkbox==self.chkLast10 or chkbox==self.chkToday) and chkbox.active):
+            if self.currentID != -1:
+                self.display_detection_log(self.currentID)
 
 class LogFaceGrid (FocusBehavior, CompoundSelectionBehavior, GridLayout):
     '''Grid layout for displaying face log content'''

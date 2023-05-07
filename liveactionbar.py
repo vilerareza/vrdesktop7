@@ -18,10 +18,15 @@ class LiveActionBar (GridLayout):
     def button_release_callback(self, button):
         if button == self.ids.capture_image_button:
             button.source = 'images/capturenormal.png'
-        if button == self.ids.centering_actionbar_icon:
+        elif button == self.ids.centering_actionbar_icon:
             button.source = 'images/centering_normal.png'
             if self.parent:
                 self.parent.start_move(dir = 'C')
+        elif button == self.ids.stop_stream_icon:
+            # button.source = 'images/centering_normal.png'
+            if self.parent:
+                self.parent.start_stop_cam()
+                self.parent.get_rec_info()
 
     def button_touch_action(self, *args):
         if args[0].collide_point(*args[1].pos):

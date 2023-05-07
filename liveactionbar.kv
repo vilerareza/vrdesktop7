@@ -25,6 +25,8 @@
             mipmap : True
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
+            on_press : root.button_press_callback(self)
+            on_release : root.button_release_callback(self)
 
     BoxLayout:
         id : centering_box
