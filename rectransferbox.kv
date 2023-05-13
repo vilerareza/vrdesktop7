@@ -1,9 +1,118 @@
 <RecTransferBox>:
-    orientation : 'horizontal'
 
-    Button:
-        text: 'Download'
-        on_release: root.download_rec()
-    
-    Button:
-        text: 'Cancel'
+    btnDate : btn_date
+    btnTime : btn_time
+    btnDownload : btn_download
+    btnCancel : btn_cancel
+
+    orientation : 'vertical'
+    size_hint : (None, None)
+    size: dp(360), dp(110) 
+    pos_hint : {'center_x':0.5, 'center_y': 0.5}
+
+    # canvas.before:
+    #    Color:
+    #        rgb: 0.15, 0.15, 0.15
+    #    Rectangle:
+    #        pos: self.pos
+    #        size: self.size
+
+    #FloatLayout:
+    #    id : upper_container
+    #    size_hint : (1, None)
+    #    height : dp(25)
+    #    canvas.before:
+    #        Color:
+    #            rgb: 0.15, 0.15, 0.15
+    #        Rectangle:
+    #            pos: self.pos
+    #            size: self.size
+
+    #    Label:    
+    #        text: 'Download Clip'
+    #        size_hint: (None, None)
+    #        size: dp(150), dp(40)
+    #        text_size : self.size
+    #        halign : 'left'
+    #        valign : 'middle'
+    #        font_size: 17
+    #        font_family: "arial"
+    #        x: upper_container.x + dp(10)
+    #        center_y: upper_container.center_y
+            
+
+    FloatLayout:
+        id : container
+        size_hint : (1, 1)
+
+        Image:
+            id : bg_image
+            pos_hint : {'center_x':0.5, 'center_y': 0.5}
+            source : "images/multiview/rec_files_dialog.png"
+
+        Label:
+            id: lbl_datetime
+            text: 'Date/Time:'
+            size_hint : (None, 1)
+            size: (dp(80), dp(30))
+            text_size : self.size
+            halign : 'left'
+            valign : 'middle'
+            font_size: 14
+            font_family: "arial"
+            x: container.x + dp(15)
+            center_y: container.center_y - dp(10)
+        
+        Button:
+            id : btn_date
+            text: root.strDate
+            background_normal: 'images/multiview/btn_date.png'
+            background_down: 'images/multiview/btn_date_down.png'
+            background_disabled_normal: 'images/multiview/btn_date.png'
+            size_hint: (None, None)
+            size: (75, 30)
+            center_y: container.center_y - dp(10)
+            x:lbl_datetime.right+dp(5)
+            on_release : root.button_release_callback(self)
+        
+        Button:
+            id : btn_time
+            text: root.strTime
+            background_normal: 'images/multiview/btn_time.png'
+            background_down: 'images/multiview/btn_time_down.png'
+            background_disabled_normal: 'images/multiview/btn_time.png'
+            size_hint: (None, None)
+            size: (55, 30)
+            center_y: container.center_y - dp(10)
+            x:btn_date.right+dp(5)
+            on_release : root.button_release_callback(self)
+
+        Button:
+            id: btn_download
+            text: 'Download'
+            background_normal: 'images/multiview/btn_download.png'
+            background_down: 'images/multiview/btn_download_down.png'
+            background_disabled_normal: 'images/multiview/btn_download.png'
+            size_hint: (None, None)
+            size: (dp(100), dp(30))
+            right: container.right-dp(10)
+            center_y:container.center_y - dp(10)
+            on_release: root.button_release_callback(self)
+            disabled: True
+
+        Button:
+            id: btn_cancel
+            text: 'X'
+            font_family: "arial"
+            text_size : self.size
+            font_size: 17
+            halign : 'center'
+            valign : 'middle'
+            background_normal: 'images/multiview/btn_close.png'
+            background_down: 'images/multiview/btn_close_down.png'
+            mipmap : True
+            size_hint: (None, None)
+            size: (dp(30), dp(30))
+            right: container.right-dp(10)
+            top: container.top-dp(5)
+            on_release: root.button_release_callback(self)

@@ -1,5 +1,6 @@
 import io
 import os
+import gc
 import time
 from functools import partial
 from threading import Thread, Condition
@@ -13,16 +14,22 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.graphics.texture import Texture
 from kivy.core.image import Image as CoreImage
 
+from tkinter import Tk, filedialog
+
 from audioconnection import AudioReceiver, AudioTransmitter
 from mylayoutwidgets import ColorFloatLayout
 
 from livestream import LiveStream
 from rectransferbox import RecTransferBox
 
+import numpy as np
 import websocket
 import json
+import base64
+
 
 Builder.load_file('livebox.kv')
+
 
 class LiveBox(MDFloatLayout, HoverBehavior):
     liveStream = ObjectProperty(None)
@@ -32,7 +39,6 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     moveUp = ObjectProperty(None)
     moveDown = ObjectProperty(None)
     status = StringProperty("stop")
-    recTransferBox = ObjectProperty(None)
     moveEvent = None
     # Websockets
     wst = None
@@ -54,7 +60,10 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     # Device IP
     deviceIP = ''
     # Recording files from camera
-    rec_files = {'year':[],'month':[],'date':[],'hour':[],'min':[]}
+    rec_files = {}
+    rec_val_dates = {}
+    dir_to_save_rec = ''
+
 
     def __init__(self, device_name = '', **kwargs):
         super().__init__(**kwargs)
@@ -67,44 +76,27 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     def on_leave(self, *args):
         self.hide_controls()
 
+    def update_frame(self, coreImg, *largs):
+        ## Update the livestream texture with new frame
+        self.liveStream.texture = coreImg.texture
+        self.liveStream.canvas.ask_update()
+        # Notify the stream monitor
+        with self.condition:
+            self.condition.notify_all()
+
+    def on_frame_(self, wsapp, message):
+        ### When frame data is received form server
+        #### Create the CoreImage object
+        coreImg = CoreImage(io.BytesIO(message), ext = 'jpg')
+        #### Update the livestream texture with new frame
+        Clock.schedule_once(partial(self.update_frame, coreImg), 0)
+    
+
     def start_live_stream (self, deviceIP):
         # Start the live stream (Image object)
 
         self.deviceIP = deviceIP
-
-        ## Connect to websocket
-        def on_message(wsapp, message):
-            ### When frame data is received form server
-            #### Create the CoreImage object
-            coreImg = CoreImage(io.BytesIO(message), ext = 'jpg')
-            #### Update the livestream texture with new frame
-            Clock.schedule_once(partial(update_frame, coreImg), 0)
         
-        def on_message_control(wsapp, message):
-            message_json = json.loads(message)
-            if message_json['resp_type'] == 'rec_files':
-                files = message_json['files']
-                for file in files:
-                    try:
-                        file_name = os.path.splitext(os.path.split(file)[-1])[0]
-                        year, month, date, hour, min_, sec = file_name.split('_')
-                        self.rec_files['year'].append(year)
-                        self.rec_files['month'].append(month)
-                        self.rec_files['date'].append(date)
-                        self.rec_files['hour'].append(hour)
-                        self.rec_files['min'].append(min_)
-                    except Exception as e:
-                        print (e)
-                print (self.rec_files)
-        
-        def update_frame(coreImg, *largs):
-            ## Update the livestream texture with new frame
-            self.liveStream.texture = coreImg.texture
-            self.liveStream.canvas.ask_update()
-            # Notify the stream monitor
-            with self.condition:
-                self.condition.notify_all()
-
         def monitor_stream():
             # Create the monitor function
             while (not self.stop_flag):
@@ -114,8 +106,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
 
         try:
             # Create the websocket connection to camera
-            self.wsapp = websocket.WebSocketApp(f"ws://{deviceIP}:8000/frame/", on_message=on_message)
-            self.wsapp_control = websocket.WebSocketApp(f"ws://{deviceIP}:8000/control/", on_message=on_message_control)
+            self.wsapp = websocket.WebSocketApp(f"ws://{deviceIP}:8000/frame/", on_message=self.on_frame_)
+            self.wsapp_control = websocket.WebSocketApp(f"ws://{deviceIP}:8000/control/", on_message=self.on_control_response)
 
             def run():
                 # Start the websocket connection
@@ -130,7 +122,6 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             # Re-init the texture of the liveStream object
             self.liveStream.texture = Texture.create()
 
-        #try:
             # Start the websocket connection in new thread
             self.wst = Thread(target = run)
             self.wst_control = Thread(target = run_control)
@@ -148,16 +139,19 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             print (f'{e}: Failed starting websocket connection')
             self.wst = None
             self.wst_control = None
-        finally:
             # Close the websocket connection
             self.stop_websockets()
+
+
 
     def stop_websockets(self):
         try:
             self.wsapp.close()
             self.wsapp_control.close()
+            self.wsapp_download.close()
         except:
             pass
+
 
     def stop_live_stream (self):
         try:  
@@ -184,9 +178,11 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             print (e)
             self.status = "stop"
 
+
     def adjust_self_size(self, size):
         self.size = size
         self.adjust_livestream_size(size)
+
 
     def adjust_livestream_size(self, size):
         factor1 = size[0] / self.liveStream.width
@@ -195,9 +191,11 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         target_size = ((self.liveStream.width * factor), (self.liveStream.height * factor))
         self.liveStream.size = target_size     
 
+
     def capture_image(self, file_name = ''):
         if file_name =='':
             self.liveStream.texture.save("test.png", flipped = False)
+
 
     def show_controls(self):
         self.liveActionBar.opacity  = 0.7
@@ -206,13 +204,15 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         self.moveUp.opacity  = 0.7
         self.moveDown.opacity  = 0.7
 
+
     def hide_controls(self):
         self.liveActionBar.opacity  = 0
         self.moveLeft.opacity  = 0
         self.moveRight.opacity  = 0
         self.moveUp.opacity  = 0
         self.moveDown.opacity  = 0
-    
+
+
     def button_touch_down(self, *args):
         if args[0].collide_point(*args[1].pos):
             if args[0] == self.moveLeft:
@@ -276,6 +276,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
                         ), self.moveRepetitionSec
                     )
 
+
     def button_touch_up(self, *args):
         if args[0].collide_point(*args[1].pos):
             print ('touch up')
@@ -288,7 +289,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
                 self.moveRight.source = 'images/moveright_normal.png'
                 self.moveUp.source = 'images/moveup_normal.png'
                 self.moveDown.source = 'images/movedown_normal.png'
-    
+
+
     def start_move(self, clock = None, dir = 'C', distance = 0):
         if dir != 'L' and dir != 'R' and dir != 'U' and dir != 'D' and dir != 'C':
             print ('Direction not valid')
@@ -304,6 +306,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         # Start the move thread
         Thread(target = partial(move, dir ,distance)).start()
  
+
     def on_touch_down(self, touch):
         super().on_touch_down(touch)
 
@@ -335,36 +338,43 @@ class LiveBox(MDFloatLayout, HoverBehavior):
 
                 print (f'touch pos: {touchPos}')
 
+
     def calculate_move_distance(self, touch_x=0, touch_y=0):
         distance_x = (((self.liveStream.center_x-self.liveStream.x) - touch_x)/(self.liveStream.center_x-self.liveStream.x)) * self.servo_max_move
         distance_y = (((self.liveStream.center_y-self.liveStream.y) - touch_y)/(self.liveStream.center_y-self.liveStream.y)) * self.servo_max_move
         #print (f'move distance: {distance}, center_x: {self.liveStream.center_x}, touch_x: {touch_x}')
         return distance_x, distance_y
 
+
     def start_audio_in(self):
         # Start audio_in
         audioinThread = Thread(target = self.audio_in)
         audioinThread.start()
+
 
     def audio_in(self):
         print ('audio_in')
         self.audioReceiver = AudioReceiver(self.deviceUrl, devicePort = 65001)
         self.audioReceiver.start_stream()
 
+
     def stop_audio_in(self):
         if self.audioReceiver:
             self.audioReceiver.stop_stream()
             self.audioReceiver = None
+
 
     def start_audio_out(self):
         # Start audio_out
         audiooutThread = Thread(target = self.audio_out)
         audiooutThread.start()
 
+
     def audio_out(self):
         print ('audio_out')
         self.audioTransmitter = AudioTransmitter(self.deviceUrl, devicePort = 65002)
         self.audioTransmitter.start_stream()
+
 
     def stop_audio_out(self):
         if self.audioTransmitter:
@@ -373,6 +383,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
 
 
     def light(self, on = False):
+        # Control the camera illumination
 
         def light_on():
             data = {'op': 'lt', 'on' : on}
@@ -388,8 +399,10 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     
 
     def start_stop_cam(self, start=False):
-        
+        # Send start or stop command to camera
+
         def __start_stop_cam():
+
             data = {'op': 'st', 'start': start}
             try:
                 self.wsapp_control.send(json.dumps(data))
@@ -398,43 +411,62 @@ class LiveBox(MDFloatLayout, HoverBehavior):
                 print (f'{e}: Error start / stop command to camera')
                 return False
         
-        ## Connect to websocket
-        def on_message(wsapp, message):
-            print('Rec file received')
-            with open ('rec_file_test.mp4', 'wb') as file:
-                file.write(message)
+        if not start:
+            # Stop the camera            
 
-        # Thread(target = start_stop_cam_).start()
-        __start_stop_cam()
-        # Re-init the texture of the liveStream object
-        # self.liveStream.texture = Texture.create()
-        # print ('texture changed')
-        # Clock.schedule_once(partial(callback, isSuccess, r), 0)
-        #self.liveStream.source = 'images/stopstream.png'
-        #self.liveStream.reload
-        self.wsapp.close()
-        #Clock.schedule_once(test_func, 0)
-        #self.liveStream.canvas.ask_update()
+            # Send stop command to camera
+            __start_stop_cam()
+            # Close existing frame websocket
+            self.wsapp.close()
+            # Show recording transfer dialog
+            self.recTransferBox = RecTransferBox()
+            self.add_widget(self.recTransferBox)
 
-        # self.recTransferBox = RecTransferBox()
-        self.add_widget(RecTransferBox(size_hint = (0.4, 0.4), pos_hint = {'center_x':0.5, 'center_y': 0.5}))
+            try:
+                # Create new websocket connection to camera for file download
+                self.wsapp_download = websocket.WebSocketApp(f"ws://{self.deviceIP}:8000/download/", on_message=self.on_download)
 
-        try:
-            # Create the websocket connection to camera
-            self.wsapp_download = websocket.WebSocketApp(f"ws://{self.deviceIP}:8000/download/", on_message=on_message)
+                def run_ws_download():
+                    # Start the websocket connection
+                    time.sleep(0.3) # Without this delay the websocket callback will not run
+                    self.wsapp_download.run_forever()
 
-            def run_download():
-                # Start the websocket connection
-                time.sleep(0.3) # Without this delay the websocket callback will not run
-                self.wsapp_download.run_forever()
+                self.wst_download = Thread(target = run_ws_download)
+                self.wst_download.daemon = True
+                self.wst_download.start()
 
-            self.wst_download = Thread(target = run_download)
-            self.wst_download.daemon = True
-            self.wst_download.start()
+            except Exception as e:
+                print (f'{e}: Failed starting download websocket connection')
+                self.wst_download = None
+                del self.wst_download
+                gc.collect()
+        
+        else:
+            # Re-start the camera
+            
+            try:
+                # Create the new frame websocket connection to camera
+                self.wsapp = websocket.WebSocketApp(f"ws://{self.deviceIP}:8000/frame/", on_message=self.on_frame_)
 
-        except Exception as e:
-            print (f'{e}: Failed starting download websocket connection')
-            self.wst_download = None
+                def run():
+                    # Start the websocket connection
+                    time.sleep(0.3) # Without this delay the websocket callback will not run
+                    self.wsapp.run_forever()
+
+                # Start the websocket connection in new thread
+                self.wst = Thread(target = run)
+                self.wst.daemon = True
+                self.wst.start()
+                # Change the status
+                self.status = "play"
+
+            except Exception as e:
+                print (f'{e}: Failed starting websocket connection')
+                self.wst = None
+                del self.wst_download
+                gc.collect()
+                # Close the websocket connection
+                self.stop_websockets()
             
 
     def get_rec_info(self):
@@ -450,16 +482,167 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             return False
 
 
-    def download_rec(self):
+    def download_rec(self, date_, time_):
+        # Download recording files from camera
 
-        # Sending download command via control websocket
-        data = {'op': 'download'}
+        def __show_save_dialog():
+            
+            dirname = ''
+            root = Tk()
+            root.withdraw()
+            dirname = filedialog.askdirectory()
+            root.destroy()
+            return dirname
+
+        # Open directory selection dalog
+        self.dir_to_save_rec = __show_save_dialog()
+
+        if self.dir_to_save_rec != '':
+
+            # Get path of files to download
+            rec_to_download = self.get_rec_to_download(date_, time_)
+
+            try:
+                # Create new websocket connection to camera for file download
+                # self.wsapp_download = websocket.WebSocket()
+                # self.wsapp_download.connect(f'ws://{self.deviceIP}:8000/download/{len(rec_to_download)}')
+                
+                # Sending download command via download websocket
+                data = {'op': 'download', 'files': rec_to_download}
+                self.wsapp_download.send(json.dumps(data))
+
+                # for i in range(len(rec_to_download)):
+                #     print ('receive something')
+                #     message = self.wsapp_download.recv()
+                #     message_json = json.loads(message)
+                #     print (message_json['filename'])
+                #     file_name = message_json['filename']
+                #     file_bytes = base64.b64decode(message_json['filebytes'])
+                #     with open (f'{file_name}', 'wb') as file:
+                #         file.write(file_bytes)
+                # self.wsapp_download.close()            
+                return True
+            
+            except Exception as e:
+                print (f'{e}: Error when downloading rec file from camera')
+                return False
+
+
+    def close_rec_dialog(self):
+        # Closing the rec file download dialog
 
         try:
-            self.wsapp_control.send(json.dumps(data))
-            return True
-        except Exception as e:
-            print (f'{e}: Error downloading rec file from camera')
+            # Close and remove websocket
+            self.wsapp_download.close()
+            self.wst_download = None
+            del self.wst_download
+
+        finally:
+            # Remove rec dialog widget
+            self.remove_widget(self.recTransferBox)
+            self.recTransferBox = None
+            del self.recTransferBox
+            # Clearing list of recording files
+            self.rec_files.clear()
+
+            gc.collect()
+
+            # Re-start the camera
+            self.start_stop_cam(start=True)
+        
+
+
+    def get_rec_to_download(self, date_, time_):
+        # Get rec files to download based on selected date and time
+        
+        try:
+
+            year = date_.year
+            month = date_.month
+            day = date_.day
+            hour = time_.hour
+
+            # Compare selected date and time to elements in rec files dict
+
+            rec_to_download = []
+
+            for file in self.rec_files.keys():
+                # print (rec_files[file]['year'], rec_files[file]['month'], rec_files[file]['date'], rec_files[file]['hour'])
+                if ((self.rec_files[file]['year']==year) and
+                        (self.rec_files[file]['month']==month) and 
+                        (self.rec_files[file]['date']==day) and 
+                        (self.rec_files[file]['hour']==hour)):
+                    
+                    # Add the rec file path to list for download
+                    rec_to_download.append(self.rec_files[file]['path'])
+                
+            return rec_to_download
+        
+        except:
+            print ('not exist')
+            return []
+
+
+    def is_rec_exist(self, year, month, day, hour):
+        # Get rec files to download based on selected date and time
+
+        try:
+            # Compare selected date and time to elements in rec files dict
+            for file in self.rec_files.keys():
+                if ((self.rec_files[file]['year']==year) and
+                        (self.rec_files[file]['month']==month) and 
+                        (self.rec_files[file]['date']==day) and 
+                        (self.rec_files[file]['hour']==hour)):
+                    print ('exist')
+                    return True
+                
+            print ('not exist')
             return False
+        
+        except:
+            print ('not exist')
+            return False
+        
+    
+    def on_control_response(self, wsapp, message):
+
+        message_json = json.loads(message)
+        
+        if message_json['resp_type'] == 'rec_files':
+            # If the response is JSON of recoding files
+
+            # Extracting the year, month, date, hour and mins of rec files
+            files = message_json['files']
+
+            years=[];months=[];dates=[]
+            
+            for file in files:
+                file_name = os.path.splitext(os.path.split(file)[-1])[0]
+                year, month, date_, hour, min_, sec = file_name.split('_')
+                year = int(year) ; month = int(month) ; date_ = int(date_) ; hour = int(hour) 
+                years.append(int(year))
+                months.append(int(month))
+                dates.append(int(date_))
+
+                self.rec_files[file_name]={'path':file, 'year':year, 'month': month, 'date': date_, 'hour': hour, 'min': min_}
+
+            years = np.array(years)
+            months = np.array(months)
+            dates = np.array(dates)
+
+            # Getting min and max value for year, month and date 
+            self.rec_val_dates['year_min'] = years.min() ; self.rec_val_dates['year_max'] = years.max()
+            self.rec_val_dates['month_min'] = months.min() ; self.rec_val_dates['month_max'] = months.max()
+            self.rec_val_dates['date_min'] = dates.min() ; self.rec_val_dates['date_max'] = dates.max()
+
+            # print (f'val dates {self.rec_val_dates}')
+            # print (self.rec_files)
 
 
+    def on_download(self, wsapp, message):
+        message_json = json.loads(message)
+        print (f"Receiving {message_json['filename']}")
+        file_name = message_json['filename']
+        file_bytes = base64.b64decode(message_json['filebytes'])
+        with open (f'{os.path.join(self.dir_to_save_rec, file_name)}', 'wb') as file:
+            file.write(file_bytes)
