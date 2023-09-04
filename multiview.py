@@ -203,18 +203,26 @@ class MultiView(BoxLayout):
         except Exception as e:
             print (f'Saving server address failed: {e}')
 
+
     def icon_touch_action(self, deviceIcon, touch):
+        
         '''When user touch on device icon, show the respective live stream onject (livebox)'''
         if deviceIcon.collide_point(*touch.pos):
-            #if deviceIcon.isEnabled:
-            if not deviceIcon.disabled:
-                if self.liveBoxes[self.deviceIcons.index(deviceIcon)].status != "play":
-                    # If the live stream object status is not playing then add #
-                    self.show_live_box(deviceIcon)
-                else:
-                    # If the live stream object status is playing then remove
-                    self.remove_live_box(deviceIcon)
             
+            if not deviceIcon.disabled:
+
+                if deviceIcon.isConnected:
+                    if self.liveBoxes[self.deviceIcons.index(deviceIcon)].status != "play":
+                        # If the live stream object status is not playing then add #
+                        self.show_live_box(deviceIcon)
+                    else:
+                        # If the live stream object status is playing then remove
+                        self.remove_live_box(deviceIcon=deviceIcon)
+                else:
+                    # Try get the device IP again
+                    deviceIcon.get_device_ip()
+            
+
     def show_live_box(self, deviceIcon):
         '''Show the live stream object based on selected device icon'''
         index = self.deviceIcons.index(deviceIcon)
@@ -232,12 +240,26 @@ class MultiView(BoxLayout):
         # Adjust the livestream to the size of livebox
         self.adjust_livebox_size()
         # print (f'ROWS : {self.liveGrid.rows} COLS : {self.liveGrid.cols}')
+        # Change the icon image to play
+        deviceIcon.statusImage.source = 'images/multiview/play.png'
 
-    def remove_live_box(self, deviceIcon):
-        '''Stop live stream object based on selected device icon'''
-        self.liveBoxes[self.deviceIcons.index(deviceIcon)].stop_live_stream()
-        # Remove live stream object from live grid layout
-        self.liveGrid.remove_widget(self.liveBoxes[self.deviceIcons.index(deviceIcon)])
+
+    def remove_live_box(self, deviceIcon=None, liveBox=None):
+
+        if liveBox:
+            '''Stop live stream object based on direct request from livebox'''
+            liveBox.stop_live_stream()
+            # Remove live stream object from live grid layout
+            self.liveGrid.remove_widget(liveBox)
+            self.deviceIcons[self.liveBoxes.index(liveBox)].statusImage.source = 'images/multiview/standby.png'
+        else:
+            '''Stop live stream object based on selected device icon'''
+            self.liveBoxes[self.deviceIcons.index(deviceIcon)].stop_live_stream()
+            # Remove live stream object from live grid layout
+            self.liveGrid.remove_widget(self.liveBoxes[self.deviceIcons.index(deviceIcon)])
+            # Change the icon image to standby
+            deviceIcon.statusImage.source = 'images/multiview/standby.png'
+
         # Re-adjust live grid rows and cols
         if self.adjust_livegrid(action = 'remove') > 0:
             # Adjust the livestream to the size of livebox
@@ -246,6 +268,7 @@ class MultiView(BoxLayout):
             # Showing initLabel
             self.liveGrid.show_initlabel()
         #print (f'ROWS : {self.liveGrid.rows} COLS : {self.liveGrid.cols}')
+
 
     def adjust_livegrid(self, action = 'add'):
         '''Adjust liveGrid rows and collumns based on add / remove of livebox. Return True if success'''
@@ -277,6 +300,11 @@ class MultiView(BoxLayout):
                     self.liveGrid.rows)
         for livebox in self.liveBoxes:
             livebox.adjust_self_size(size = (cell_width, cell_height))
+            # Disabled audio and download button on livebox if there is > 1 livebox
+            if self.liveGrid.nLive > 1:
+                livebox.reduce_action_control()
+            if self.liveGrid.nLive == 1:
+                livebox.restore_action_control()
         #print (f'GRID SIZE {self.liveGrid.size}, CELL SIZE {cell_width}, {cell_height}')
 
     def stop_icons(self):

@@ -1,4 +1,5 @@
 <LiveActionBar>:
+
     rows : 1
     canvas.before :
         Color:
@@ -9,30 +10,21 @@
     
     BoxLayout :
         id : capture_image_box
+        size_hint : (1, 1)
         ImageButton:
             id : capture_image_button
-            source : 'images/capturenormal.png'
+            source: 'images/multiview/capturenormal.png'
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
             on_press : root.button_press_callback(self)
             on_release : root.button_release_callback(self)
     
     BoxLayout:
-        id : stop_stream_box
-        ImageButton:
-            id : stop_stream_icon
-            source : 'images/stopstream.png'
-            mipmap : True
-            size_hint : (1, 0.8)
-            pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
-            on_press : root.button_press_callback(self)
-            on_release : root.button_release_callback(self)
-
-    BoxLayout:
         id : centering_box
+        size_hint : (1, 1)
         ImageButton:
             id : centering_actionbar_icon
-            source : 'images/centering_normal.png'
+            source : 'images/multiview/centering_normal.png'
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
             #on_touch_down: root.button_touch_action(*args)
@@ -41,9 +33,10 @@
 
     BoxLayout:
         id : light_box
+        size_hint : (1, 1)
         ImageToggle:
             id : light_icon_button
-            source : 'images/light_normal.png'
+            source : 'images/multiview/light_normal.png'
             mimpap : True
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
@@ -51,18 +44,35 @@
 
     BoxLayout :
         id : speaker_icon_box
+        size_hint : (1, 1)
         ImageToggle:
             id : speaker_icon_button
-            source : 'images/speaker_normal.png'
+            source : 'images/multiview/speaker_normal.png'
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
             on_state : root.toggle_press_callback(self)
+            opacity: 0.4 if self.disabled == True else 1.0
 
     BoxLayout :
         id : mic_icon_box
+        size_hint : (1, 1)
         ImageToggle:
             id : mic_icon_button
-            source : 'images/mic_normal.png'
+            source : 'images/multiview/mic_normal.png'
             size_hint : (1, 0.8)
             pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
             on_state : root.toggle_press_callback(self)
+            opacity: 0.4 if self.disabled == True else 1.0
+
+    BoxLayout:
+        id : download_box
+        size_hint : (1, 1)
+        ImageButton:
+            id : download_icon
+            source : 'images/multiview/download_normal.png'
+            mipmap : True
+            size_hint : (1, 0.8)
+            pos_hint : {'center_x' : 0.5, 'center_y' : 0.5}
+            on_press : root.button_press_callback(self)
+            on_release : root.button_release_callback(self)
+            opacity: 0.4 if self.disabled == True else 1.0

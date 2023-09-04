@@ -2,6 +2,8 @@
 #: import liveactionbar liveactionbar
 
 <LiveBox>:
+
+    manager : app.manager
     size_hint: None, None
     liveStream : live_stream
     liveActionBar : live_action_bar
@@ -9,6 +11,7 @@
     moveRight : move_right
     moveUp : move_up
     moveDown : move_down
+    closeMe : close_me
 
     LiveStream:
         id : live_stream
@@ -22,14 +25,15 @@
         opacity : 0
         size_hint : None, None
         width : live_stream.width * 0.7
-        height : live_stream.height * 0.1
+        # height : live_stream.height * 0.1
+        height : dp(45)
         pos_hint: {'center_x' : 0.5}
         y : live_stream.y
     
     Image:
         id : move_left
         opacity : 0
-        source : 'images/moveleft_normal.png'
+        source : 'images/multiview/moveleft_normal.png'
         size_hint : None, None
         size : (dp(20), dp(40))
         x : live_stream.x + dp(10)
@@ -40,7 +44,7 @@
     Image:
         id : move_right
         opacity : 0
-        source : 'images/moveright_normal.png'
+        source : 'images/multiview/moveright_normal.png'
         size_hint : None, None
         size : (dp(20), dp(40))
         right : live_stream.right - dp(10)
@@ -51,7 +55,7 @@
     Image:
         id : move_up
         opacity : 0
-        source : 'images/moveup_normal.png'
+        source : 'images/multiview/moveup_normal.png'
         size_hint : None, None
         size : (dp(40), dp(20))
         center_x : live_stream.center_x
@@ -62,10 +66,23 @@
     Image:
         id : move_down
         opacity : 0
-        source : 'images/movedown_normal.png'
+        source : 'images/multiview/movedown_normal.png'
         size_hint : None, None
         size : (dp(40), dp(20))
         center_x : live_stream.center_x
         y : live_action_bar.top + dp(10)
+        on_touch_down: root.button_touch_down(*args)
+        on_touch_up: root.button_touch_up(*args)
+
+    Image:
+        id : close_me
+        opacity : 0
+        source : 'images/multiview/close_normal.png'
+        size_hint : None, None
+        # width : live_stream.width * 0.7
+        # height : live_stream.height * 0.1
+        size : (dp(40), dp(40))
+        top : live_stream.top - dp(10)
+        right : live_stream.right - dp(10)
         on_touch_down: root.button_touch_down(*args)
         on_touch_up: root.button_touch_up(*args)

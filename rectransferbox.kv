@@ -4,6 +4,7 @@
     btnTime : btn_time
     btnDownload : btn_download
     btnCancel : btn_cancel
+    lblStatus : lbl_status
 
     orientation : 'vertical'
     size_hint : (None, None)
@@ -53,7 +54,7 @@
         Label:
             id: lbl_datetime
             text: 'Date/Time:'
-            size_hint : (None, 1)
+            size_hint : (None, None)
             size: (dp(80), dp(30))
             text_size : self.size
             halign : 'left'
@@ -99,6 +100,19 @@
             center_y:container.center_y - dp(10)
             on_release: root.button_release_callback(self)
             disabled: True
+
+        Label:
+            id: lbl_status
+            text: root.strStatus
+            size_hint : (None, None)
+            size: (dp(200), dp(15))
+            text_size : self.size
+            halign : 'center'
+            valign : 'middle'
+            font_size: 14
+            font_family: "arial"
+            center_x: container.center_x
+            y: container.y + dp(5)
 
         Button:
             id: btn_cancel

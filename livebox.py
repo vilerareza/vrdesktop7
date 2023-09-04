@@ -2,6 +2,7 @@ import io
 import os
 import gc
 import time
+from datetime import datetime
 from functools import partial
 from threading import Thread, Condition
 
@@ -32,6 +33,9 @@ Builder.load_file('livebox.kv')
 
 
 class LiveBox(MDFloatLayout, HoverBehavior):
+
+    manager = ObjectProperty(None)
+    closeMe = ObjectProperty(None)
     liveStream = ObjectProperty(None)
     liveActionBar = ObjectProperty(None)
     moveLeft = ObjectProperty(None)
@@ -46,7 +50,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     # Stream monitor
     streamMon = None
     # Movement
-    moveEnabled = True
+    controlsEnabled = True
     moveRepetitionSec = 0.3
     moveDistance = 10
     # servo parameter
@@ -63,6 +67,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     rec_files = {}
     rec_val_dates = {}
     dir_to_save_rec = ''
+    rec_to_download = []
+    download_ctr = 0
 
 
     def __init__(self, device_name = '', **kwargs):
@@ -143,7 +149,6 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             self.stop_websockets()
 
 
-
     def stop_websockets(self):
         try:
             self.wsapp.close()
@@ -203,7 +208,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         self.moveRight.opacity  = 0.7
         self.moveUp.opacity  = 0.7
         self.moveDown.opacity  = 0.7
-
+        self.closeMe.opacity = 0.7
 
     def hide_controls(self):
         self.liveActionBar.opacity  = 0
@@ -211,84 +216,112 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         self.moveRight.opacity  = 0
         self.moveUp.opacity  = 0
         self.moveDown.opacity  = 0
+        self.closeMe.opacity = 0
+
+    def reduce_action_control(self):
+        # Disable some controls (audio and download) on live action bar
+        self.liveActionBar.reduce_action_control()
+    
+    def restore_action_control(self):
+        # Re-enable some controls (audio and download) on live action bar
+        self.liveActionBar.restore_action_control()
 
 
     def button_touch_down(self, *args):
-        if args[0].collide_point(*args[1].pos):
-            if args[0] == self.moveLeft:
-                # Move left
-                print ('touch down left')
-                if not self.moveEvent:
-                    # Change button appearance
-                    args[0].source = 'images/moveleft_down.png'
-                    # Move once
-                    self.start_move(dir = 'L', distance = self.moveDistance)
-                    # Continue movement with interval if the button is still pressed
-                    self.moveEvent = Clock.schedule_interval(partial(
-                        self.start_move,
-                        dir = 'L',
-                        distance = self.moveDistance
-                        ), self.moveRepetitionSec
-                    )
-            if args[0] == self.moveRight:
-                # Move right
-                print ('touch down right')
-                if not self.moveEvent:
-                    # Change button appearance
-                    args[0].source = 'images/moveright_down.png'
-                    # Move once
-                    self.start_move(dir = 'R', distance = self.moveDistance)
-                    # Continue movement with interval if the button is still pressed
-                    self.moveEvent = Clock.schedule_interval(partial( 
-                        self.start_move,
-                        dir = 'R',
-                        distance = self.moveDistance
-                        ), self.moveRepetitionSec
-                    )
-            if args[0] == self.moveUp:
-                # Move up
-                print ('touch down up')
-                if not self.moveEvent:
-                    # Change button appearance
-                    args[0].source = 'images/moveup_down.png'
-                    # Move once
-                    self.start_move(dir = 'U', distance = self.moveDistance)
-                    # Continue movement with interval if the button is still pressed
-                    self.moveEvent = Clock.schedule_interval(partial( 
-                        self.start_move,
-                        dir = 'U',
-                        distance = self.moveDistance
-                        ), self.moveRepetitionSec
-                    )
-            if args[0] == self.moveDown:
-                # Move down
-                print ('touch down down')
-                if not self.moveEvent:
-                    # Change button appearance
-                    args[0].source = 'images/movedown_down.png'
-                    # Move once
-                    self.start_move(dir = 'D', distance = self.moveDistance)
-                    # Continue movement with interval if the button is still pressed
-                    self.moveEvent = Clock.schedule_interval(partial( 
-                        self.start_move,
-                        dir = 'D',
-                        distance = self.moveDistance
-                        ), self.moveRepetitionSec
-                    )
+
+        # Movements
+        if self.controlsEnabled:
+
+            if args[0].collide_point(*args[1].pos):
+
+                if args[0] == self.closeMe:
+                    # Close button pressed. Change button appearance
+                    args[0].source = 'images/multiview/close_down.png'
+
+                elif args[0] == self.moveLeft:
+                    # Move left
+                    print ('touch down left')
+                    if not self.moveEvent:
+                        # Change button appearance
+                        args[0].source = 'images/multiview/moveleft_down.png'
+                        # Move once
+                        self.start_move(dir = 'L', distance = self.moveDistance)
+                        # Continue movement with interval if the button is still pressed
+                        self.moveEvent = Clock.schedule_interval(partial(
+                            self.start_move,
+                            dir = 'L',
+                            distance = self.moveDistance
+                            ), self.moveRepetitionSec
+                        )
+                elif args[0] == self.moveRight:
+                    # Move right
+                    print ('touch down right')
+                    if not self.moveEvent:
+                        # Change button appearance
+                        args[0].source = 'images/multiview/moveright_down.png'
+                        # Move once
+                        self.start_move(dir = 'R', distance = self.moveDistance)
+                        # Continue movement with interval if the button is still pressed
+                        self.moveEvent = Clock.schedule_interval(partial( 
+                            self.start_move,
+                            dir = 'R',
+                            distance = self.moveDistance
+                            ), self.moveRepetitionSec
+                        )
+                elif args[0] == self.moveUp:
+                    # Move up
+                    print ('touch down up')
+                    if not self.moveEvent:
+                        # Change button appearance
+                        args[0].source = 'images/multiview/moveup_down.png'
+                        # Move once
+                        self.start_move(dir = 'U', distance = self.moveDistance)
+                        # Continue movement with interval if the button is still pressed
+                        self.moveEvent = Clock.schedule_interval(partial( 
+                            self.start_move,
+                            dir = 'U',
+                            distance = self.moveDistance
+                            ), self.moveRepetitionSec
+                        )
+                elif args[0] == self.moveDown:
+                    # Move down
+                    print ('touch down down')
+                    if not self.moveEvent:
+                        # Change button appearance
+                        args[0].source = 'images/multiview/movedown_down.png'
+                        # Move once
+                        self.start_move(dir = 'D', distance = self.moveDistance)
+                        # Continue movement with interval if the button is still pressed
+                        self.moveEvent = Clock.schedule_interval(partial( 
+                            self.start_move,
+                            dir = 'D',
+                            distance = self.moveDistance
+                            ), self.moveRepetitionSec
+                        )
 
 
     def button_touch_up(self, *args):
-        if args[0].collide_point(*args[1].pos):
-            print ('touch up')
-            # Stop the movement / cancel the repetitive movement
-            if self.moveEvent:
-                self.moveEvent.cancel()
-                self.moveEvent = None
-                # Return the movement control buttons appearance
-                self.moveLeft.source = 'images/moveleft_normal.png'
-                self.moveRight.source = 'images/moveright_normal.png'
-                self.moveUp.source = 'images/moveup_normal.png'
-                self.moveDown.source = 'images/movedown_normal.png'
+
+        # Movements
+        if self.controlsEnabled:
+
+            if args[0].collide_point(*args[1].pos):
+
+                if args[0] == self.closeMe:
+                    # Close button pressed. Change button appearance
+                    args[0].source = 'images/multiview/close_normal.png'
+                    self.manager.mainTabs.multiView.remove_live_box(liveBox = self)
+                    return
+
+                # Stop the movement / cancel the repetitive movement
+                if self.moveEvent:
+                    self.moveEvent.cancel()
+                    self.moveEvent = None
+                    # Return the movement control buttons appearance
+                    self.moveLeft.source = 'images/multiview/moveleft_normal.png'
+                    self.moveRight.source = 'images/multiview/moveright_normal.png'
+                    self.moveUp.source = 'images/multiview/moveup_normal.png'
+                    self.moveDown.source = 'images/multiview/movedown_normal.png'
 
 
     def start_move(self, clock = None, dir = 'C', distance = 0):
@@ -311,13 +344,14 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         super().on_touch_down(touch)
 
         # Movements
-        if self.moveEnabled:
+        if self.controlsEnabled:
             if self.liveStream.collide_point(*touch.pos) and not (
                 self.moveLeft.collide_point(*touch.pos) or
                 self.moveRight.collide_point(*touch.pos) or
                 self.moveUp.collide_point(*touch.pos) or
                 self.moveDown.collide_point(*touch.pos) or
-                self.liveActionBar.collide_point(*touch.pos)):
+                self.liveActionBar.collide_point(*touch.pos) or
+                self.closeMe.collide_point(*touch.pos)):
 
                 touchPos = (touch.pos[0]-self.liveStream.x, touch.pos[1]-self.liveStream.y)
                 # Calculate move distance
@@ -421,6 +455,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             # Show recording transfer dialog
             self.recTransferBox = RecTransferBox()
             self.add_widget(self.recTransferBox)
+            self.disable_controls()
 
             try:
                 # Create new websocket connection to camera for file download
@@ -500,7 +535,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         if self.dir_to_save_rec != '':
 
             # Get path of files to download
-            rec_to_download = self.get_rec_to_download(date_, time_)
+            self.rec_to_download = self.get_rec_to_download(date_, time_)
+            print (f'rec files to down: {self.rec_to_download}')
 
             try:
                 # Create new websocket connection to camera for file download
@@ -508,9 +544,13 @@ class LiveBox(MDFloatLayout, HoverBehavior):
                 # self.wsapp_download.connect(f'ws://{self.deviceIP}:8000/download/{len(rec_to_download)}')
                 
                 # Sending download command via download websocket
-                data = {'op': 'download', 'files': rec_to_download}
+                data = {'op': 'download', 'files': self.rec_to_download}
                 self.wsapp_download.send(json.dumps(data))
 
+                # Initialize download counter
+                self.download_ctr = 1
+                # Print download status info on rec transfer box
+                self.recTransferBox.strStatus = f'Downloading 1 of {len(self.rec_to_download)}...'
                 # for i in range(len(rec_to_download)):
                 #     print ('receive something')
                 #     message = self.wsapp_download.recv()
@@ -542,6 +582,7 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             self.remove_widget(self.recTransferBox)
             self.recTransferBox = None
             del self.recTransferBox
+            self.enable_controls()
             # Clearing list of recording files
             self.rec_files.clear()
 
@@ -550,7 +591,6 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             # Re-start the camera
             self.start_stop_cam(start=True)
         
-
 
     def get_rec_to_download(self, date_, time_):
         # Get rec files to download based on selected date and time
@@ -564,7 +604,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
 
             # Compare selected date and time to elements in rec files dict
 
-            rec_to_download = []
+            # rec_to_download = []
+            self.rec_to_download.clear()
 
             for file in self.rec_files.keys():
                 # print (rec_files[file]['year'], rec_files[file]['month'], rec_files[file]['date'], rec_files[file]['hour'])
@@ -574,9 +615,9 @@ class LiveBox(MDFloatLayout, HoverBehavior):
                         (self.rec_files[file]['hour']==hour)):
                     
                     # Add the rec file path to list for download
-                    rec_to_download.append(self.rec_files[file]['path'])
+                    self.rec_to_download.append(self.rec_files[file]['path'])
                 
-            return rec_to_download
+            return self.rec_to_download
         
         except:
             print ('not exist')
@@ -635,14 +676,38 @@ class LiveBox(MDFloatLayout, HoverBehavior):
             self.rec_val_dates['month_min'] = months.min() ; self.rec_val_dates['month_max'] = months.max()
             self.rec_val_dates['date_min'] = dates.min() ; self.rec_val_dates['date_max'] = dates.max()
 
-            # print (f'val dates {self.rec_val_dates}')
-            # print (self.rec_files)
+            # Check if the recording is exist for current time
+            datetime_ = datetime.now()
+            date_ = datetime_.date()
+            time_ = datetime_.time()
+            if (self.is_rec_exist(date_.year, date_.month, date_.day, time_.hour)):
+                # Enable the download button on rec transfer dialog
+                self.recTransferBox.btnDownload.disabled=False
 
 
     def on_download(self, wsapp, message):
+        
         message_json = json.loads(message)
         print (f"Receiving {message_json['filename']}")
         file_name = message_json['filename']
         file_bytes = base64.b64decode(message_json['filebytes'])
         with open (f'{os.path.join(self.dir_to_save_rec, file_name)}', 'wb') as file:
             file.write(file_bytes)
+
+        # Check if download is completed
+        if self.download_ctr == len(self.rec_to_download) :
+            # Download is complete if downnload counter is equal to number of file to download.
+            self.recTransferBox.strStatus = 'Download Complete'
+        else:
+            # Continue downloading other file
+            self.download_ctr += 1
+            self.recTransferBox.strStatus = f'Downloading {self.download_ctr} of {len(self.rec_to_download)}...'
+
+
+    def disable_controls(self):
+        self.controlsEnabled = False
+        self.liveActionBar.disabled = True
+        
+    def enable_controls(self):
+        self.controlsEnabled = True
+        self.liveActionBar.disabled = False
